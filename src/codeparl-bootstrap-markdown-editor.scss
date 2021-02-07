@@ -1,0 +1,91 @@
+/*load github markdown file for applying a beautiful looking 
+//theme of our markdown body
+*/
+
+@import "github-markdown";
+.cpmd-container.fullscreen {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    .cpme-editor {
+        height: 95vh !important;
+    }
+}
+
+body.cpme-fullscreen {
+    overflow: hidden !important;
+}
+
+.cpmd-container {
+    .cpme-toolbar {
+        .cpme-btn {
+            background-color: rgba(192, 192, 192, 0.274) !important;
+            font-weight: 900 !important;
+            border: 1px solid transparent !important;
+            &:hover {
+                border-color: rgb(68, 43, 43) !important;
+            }
+        }
+        .cpme-btn-group.float-right {
+            .cpme-btn {
+                font-weight: normal !important;
+                i {
+                    margin-right: 4px;
+                }
+            }
+        }
+        .cpme-btn.active {
+            background-color: rgba(192, 192, 192, 0.726) !important;
+        }
+        button:focus,
+        button:active {
+            outline: none !important;
+        }
+    }
+}
+
+@keyframes headShake {
+    0% {
+        transform: translateX(0);
+    }
+    6.5% {
+        transform: translateX(-6px) rotateY(-9deg);
+    }
+    18.5% {
+        transform: translateX(5px) rotateY(7deg);
+    }
+    31.5% {
+        transform: translateX(-3px) rotateY(-5deg);
+    }
+    43.5% {
+        transform: translateX(2px) rotateY(3deg);
+    }
+    50% {
+        transform: translateX(0);
+    }
+}
+
+.headShake {
+    animation-timing-function: ease-in-out;
+    animation-name: headShake;
+}
+
+.animated.fast {
+    animation-duration: 800ms;
+}
+
+.animated {
+    animation-duration: 1s;
+    animation-fill-mode: both;
+}
+
+@media (print),
+(prefers-reduced-motion: reduce) {
+    .animated {
+        animation-duration: 1ms !important;
+        transition-duration: 1ms !important;
+        animation-iteration-count: 1 !important;
+    }
+}

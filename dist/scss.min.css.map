@@ -1,0 +1,9 @@
+{
+    "version": 3,
+    "mappings": "AAEA,AAAA,OAAO,AAAC,CAKJ,KAAK,CAJU,KAAK,CAKpB,aAAa,CAAE,GAAG,CAAC,KAAK,CAHT,OAAO,CAczB,AAjBD,AAQI,OARG,CAQH,EAAE,AAAC,CACC,KAAK,CAAE,IAAI,CACX,KAAK,CAAE,KAA2B,CAElC,gBAAgB,CAAE,OAA2B,CAIhD,AAhBL,AAaQ,OAbD,CAQH,EAAE,AAKG,MAAM,AAAC,CACJ,gBAAgB,CAAE,OAA2B,CAChD",
+    "sources": [
+        "../test/vendor/js/ace-builds/demo/kitchen-sink/docs/scss.scss"
+    ],
+    "names": [],
+    "file": "scss.min.css"
+}
