@@ -108,6 +108,9 @@ Also, you can override the plugin default options. Example:
 $.fn.codeparlMarkdown.defaults.editor.editorHeight = '500px';
 ```
 
+## License
+
+Licensed under MIT (https://github.com/codeparl/CodeParl-bootstrap-markdown-editor/blob/master/LICENSE).
 ## Authors
 
 [H. Mugabo - aka codeparl](https://github.com/codeparl)
