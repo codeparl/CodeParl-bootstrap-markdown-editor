@@ -601,7 +601,6 @@
                 }
             ],
         },
-        loading: 'fa-spinner fa-spin',
         onFileBrowse: function($input, aceEditor) {
             // you can access the file object 
             //of this input here. you may also validate the file type 
