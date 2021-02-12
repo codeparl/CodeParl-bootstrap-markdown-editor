@@ -504,8 +504,9 @@
         },
 
         markdownContent: function(markdown) {
+            console.log(aceEditor);
             if (!markdown) {
-                return aceEditor.session.getvalue();
+                return aceEditor.getValue();
             } else {
                 aceEditor.session.setValue(markdown);
                 aceEditor.clearSelection();
@@ -518,22 +519,25 @@
             var html = converter.makeHtml(aceEditor.session.getValue());
             return html;
         },
-        preview: function(html) {
-            options = $.fn.codeparlMarkdown.defaults;
-            //add the preview panel 
-            $container = this.parent();
-            $preview = $('<div>').addClass('cpme-preview markdown-body overflow-auto p-2 bg-white border')
-                .appendTo($container).css({
-                    height: options.editor.editorHeight
-                });
-
-
-            this.html($preview.html(disableJs(html)));
+        preview: function(markdown,options) {
+            if(markdown){
+                options = $.extend(true, {},$.fn.codeparlMarkdown.defaults, options);
+                //add the preview panel 
+                $container = this.parent();
+                $preview = $('<div>').addClass('cpme-preview markdown-body overflow-auto p-2 bg-white border')
+                    .appendTo($container).css({
+                        height: options.editorHeight,
+                        width: options.editorWidth
+                    });
+                if (markdown.trim().length > 0) {
+                    var html = converter.makeHtml(markdown || '');
+                    this.html($preview.html(disableJs(html)));
+                }
+            }
 
         },
         destroy: function() {}
     };
-
 
     //bind our plugin with jquery
 
