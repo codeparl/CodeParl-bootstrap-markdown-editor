@@ -7,6 +7,8 @@
     //define the mehods 
     var namespace = 'codeparlMarkdown';
     var aceEditor = null,
+        classPrefix = 'cpme-',
+        urlRegex = /((https?:\/\/|ftp:\/\/|www\.|[^\s:=]+@www\.).*?[a-z_\/0-9\-\#=&])(?=(\.|,|;|\?|\!)?("|'|«|»|\[|\s|\r|\n|$))/ig,
         snippetManager = null;
     var $container = null;
     var $editor, $preview;
@@ -54,6 +56,10 @@
             tooltip: 'Numbered list <ol>',
             action: 'ol'
         },
+        btnRule: {
+            tooltip: 'Horizontal rule <hr>',
+            action: 'rule'
+        },
         btnLink: {
             tooltip: 'Hyperlink <a>',
             action: 'link'
@@ -74,9 +80,43 @@
             tooltip: 'Fullscreen',
             action: 'fullscreen'
         },
-
+        btnHelp: {
+            tooltip: 'Show markdown help',
+            action: 'help'
+        },
 
     }; //end buttonActions
+
+    var helpList = {
+        links: {
+            label: "Links",
+            help: "To use links in your markdown text you just have to  use <span> http://codeparl.com - automatic! <br> [a link](https://www.codeparl.com/) <br> Format: [text](url)</span>"
+        },
+        images: {
+            label: "Images",
+            help: "Images are exactly like links, but they have an exclamation mark before  them:<br>" +
+                "<span> ![CodeParl logo](https://codeparl.com/storage/images/logo.png) <br> Format: ![Alt Text](url)</span>" +
+                "The word in square brackets is the alt text, which gets displayed if the browser can't show the image. "
+        },
+        styling: {
+            label: "Styling/Heading",
+            help: "<span> *This is italicized*, and so <br> is _this_. <br> **This is bold**, just like __this__." +
+                "<br>You can ***combine*** them if you ___really have to___.</span>" +
+                "To break your text into sections, you can use headers: <span>" +
+                "A Large Header<br>============== <br><br>Smaller Subheader<br>-----------------" +
+                "</span>Use hash marks if you need several levels of headers: <span>" +
+                "# Header 1 #<br> ## Header 2 ##<br>### Header 3 ###</span> Use dashes if you need a " +
+                "horizontal rule <span>----------</span>"
+        },
+        lists: {
+            label: "Lists",
+            help: "Both bulleted and numbered lists are possible:<span>- Use a minus sign for a bullet<br>" +
+                "+ Or plus sign<br>* Or an asterisk<br><br>1. Numbered lists are easy<br>2. Markdown keeps track of" +
+                "the numbers for you<br>7. So this will be item 3.<hr>1. Lists in a list item:" +
+                "<br> - Indented four spaces.<br> * indented eight spaces.<br>- Four spaces again.<br>" +
+                "2.  You can have multiple<br>  paragraphs in a list items. <br>Just be sure to indent."
+        }
+    };
 
     var commands = {
         bold: {
@@ -155,7 +195,7 @@
 
     function insertText(code, holder) {
         var selectedText = aceEditor.session.getTextRange(aceEditor.getSelectionRange()) || '';
-
+        selectedText.trim();
         var range = aceEditor.find(holder, {
             wrap: true,
             caseSensitive: true,
@@ -164,38 +204,45 @@
             preventScroll: true // do not change selection
         });
 
+        if (holder === 'rule') {
+            aceEditor.insert(code);
+            aceEditor.navigateLineEnd();
+            return;
+        }
+
         if (range !== null) {
             aceEditor.session.replace(range, holder);
         } else {
             if (aceEditor.getCursorPosition().column === 0) {
-                aceEditor.navigateLineStart();
+
                 if (code === '``')
-                    aceEditor.insert('`' + holder + '` ');
+                    aceEditor.insert('`' + holder + '`');
                 else
-                    aceEditor.insert(code + holder + ' ');
-                aceEditor.navigateLineEnd();
+                    aceEditor.insert(code + holder + '');
+
             } else {
-                if (selectedText.trim().length > 0) {
+                if (selectedText.length > 0) {
                     range = aceEditor.getSelectionRange();
                     //obtain selection range
                     if (code === '``') {
-                        aceEditor.insert('`' + selectedText + '` ');
-                        aceEditor.session.replace(range, '`' + selectedText + '` ');
+                        aceEditor.insert('`' + selectedText + '`');
+                        aceEditor.session.replace(range, '`' + selectedText + '`');
                     } else {
                         aceEditor.session.replace(range, code + selectedText);
                     } //if-code
 
                 } else {
+                    aceEditor.navigateLineStart();
                     if (code === '``')
-                        aceEditor.insert('`' + holder + '` ');
+                        aceEditor.insert('`' + holder + '`');
                     else
                         aceEditor.insert(code + holder + ' ');
                     aceEditor.navigateLineEnd();
                 } //if-text
             } //if-column
         }
-
-        aceEditor.find(holder);
+        if (selectedText.trim().length === 0)
+            aceEditor.find(holder);
         aceEditor.focus();
     }
 
@@ -266,8 +313,11 @@
         } else {
             $editor.hide();
             $preview.show();
-            var html = converter.makeHtml(aceEditor.session.getValue());
-            options.onPreview(disableJs(html));
+            var markdown = aceEditor.session.getValue();
+
+            markdown = convertToLink(markdown);
+            var html = converter.makeHtml(markdown);
+            options.onPreview(disableJs(html), markdown);
             $preview.html(disableJs(html));
             $('.cpme-btn-normal')
                 .prop('disabled', true)
@@ -308,9 +358,12 @@
                 var action = $thisBtn.data('action');
 
                 //hide all tooltips
-                $('[data-original-title').tooltip('hide');
+                $('[data-original-title]').tooltip('hide');
 
                 switch (action) {
+                    case 'help':
+                        $('.cpme-help-bar').slideToggle('fast');
+                        break;
                     case 'preview':
                         view(false, $thisBtn);
                         break;
@@ -327,6 +380,8 @@
                         $('body').toggleClass('cpme-fullscreen');
                         $container.toggleClass('fullscreen');
                         $thisBtn.find('i').toggleClass('fa-expand fa-compress');
+                      
+
 
                         if ($thisBtn.find('i').hasClass('fa-expand'))
                             $thisBtn.attr('data-original-title', 'Fullscreen');
@@ -346,6 +401,9 @@
                         break;
                     case 'ol':
                         insertText('1. ', 'type your item here');
+                        break;
+                    case 'rule':
+                        insertText('----------', 'rule');
                         break;
                     case 'block':
                         insertText('> ', 'type here');
@@ -410,13 +468,26 @@
 
                     $btnGroup.append($button);
 
+                    if (k === 'btnHelp') {
+                        if (options.help.show)
+                            $btnGroup.addClass(classPrefix + 'md-help float-right  ');
+                        else $btnGroup.remove();
+
+                    }
+
+                    if (k === 'btnRule') {
+                        $button.html($('<span>').addClass('cpme-rule'));
+                        $button.addClass('cpme-rule-btn')
+                    }
+
                     if (k === 'btnEdit') {
                         $btnGroup.addClass('float-right');
                         $button.addClass('active');
                     }
 
-                    if ($.inArray(k, ['btnEdit', 'btnPreview']) !== -1) {
-                        $button.append($('<span>').text(buttonActions[k].tooltip))
+                    if ($.inArray(k, ['btnEdit', 'btnPreview', 'btnHelp']) !== -1) {
+                        if (k !== 'btnHelp')
+                            $button.append($('<span>').text(buttonActions[k].tooltip))
                     } else {
                         $button.addClass('cpme-btn-normal');
                     }
@@ -442,6 +513,69 @@
     }
 
 
+    function helpBar() {
+
+        var $hbar = $('<div>');
+        $hbar.addClass(classPrefix + 'help-bar  w-100   mx-auto py-0 ');
+
+        for (var k in helpList) {
+            $('<button>').attr({ type: 'button', "data-key": k })
+                .addClass('btn btn-sm btn-default cpme-help-btn shadow-none ')
+                .text(helpList[k].label)
+                .appendTo($hbar).on('click.' + namespace, function() {
+                    $(this).siblings('.cpme-help-btn').removeClass('cpmd-yellow');
+
+                    var $info = $('.' + classPrefix + 'help-bar-info');
+                    $info.css({
+                        top: $hbar.height(),
+                        height: options.editor.editorHeight
+                    });
+                    $info.html($('<p>').addClass('p-4 mx-auto ')
+                        .html(helpList[$(this).data('key')].help));
+
+                    $info.attr('data-key', $(this).data('key'));
+
+                    if ($info.is(':hidden')) {
+                        $info.slideDown('fast');
+                    }
+
+                    if ($(this).hasClass('cpmd-yellow'))
+                        $info.slideUp('fast');
+
+                    $(this).toggleClass('cpmd-yellow');
+                });
+
+        }
+        $('<div>')
+            .addClass(classPrefix + 'help-bar-info  w-100   mx-auto py-0 ')
+            .appendTo($hbar).hide();
+
+        $('<a>').attr({
+                href: options.help.link.url,
+                target: "_blank"
+            }).text(options.help.link.text)
+            .addClass('btn btn-link cpme-help-link float-right')
+            .appendTo($hbar);
+
+        return $hbar;
+    }
+
+    function convertToLink(text) {
+        var urls = text.match(urlRegex);
+        if (!urls || urls === null) return text;
+
+        if (urls.length > 0) {
+            for (let index = 0; index < urls.length; index++) {
+                var thisUrl = urls[index];
+                if (thisUrl.search(/https?/) == -1)
+                    thisUrl = 'http://' + thisUrl;
+
+                var url = '[' + thisUrl + '](' + thisUrl + ')';
+                text = text.replace(urls[index], url);
+            }
+        }
+        return text;
+    }
 
     function buildAceEditor() {
         aceEditor = ace.edit($editor.get(0));
@@ -449,6 +583,11 @@
         aceEditor.getSession().setMode('ace/mode/markdown');
         aceEditor.getSession().setUseWrapMode(true);
         aceEditor.getSession().setUseSoftTabs(options.editor.softTabs);
+        aceEditor.setOptions({
+            fontSize: options.editor.fontSize,
+            showGutter: options.editor.showGutter
+        });
+
         ace.config.loadModule('ace/ext/language_tools', function() {
             snippetManager = ace.require('ace/snippets').snippetManager;
             aceEditor.commands.addCommand(commands.bold);
@@ -463,7 +602,7 @@
             //first merge the options  
             options = $.extend(true, {}, $.fn.codeparlMarkdown.defaults, option);
             $editor = this;
-
+            $editor.addClass('w-100');
             //store the settings of the element
             var isInitialized = this.filter(function() {
                 return $(this).data(namespace)
@@ -489,9 +628,17 @@
             var $toolbar = toolbar(options);
 
             $toolbar.prependTo($container);
+            $toolbar.append($('<div>').addClass('clearfix'));
+
+            //hide/show the help-bar
+            if (options.help.show) {
+                helpBar().insertAfter($toolbar);
+
+            }
+
 
             //add the preview panel 
-            $preview = $('<div>').addClass('cpme-preview markdown-body overflow-auto p-2 bg-white border').hide()
+            $preview = $('<div>').addClass('cpme-preview w-100 markdown-body overflow-auto p-2 bg-white border').hide()
                 .appendTo($container).css({
                     height: options.editor.editorHeight
                 });
@@ -504,9 +651,8 @@
         },
 
         markdownContent: function(markdown) {
-            console.log(aceEditor);
             if (!markdown) {
-                return aceEditor.getValue();
+                return convertToLink(aceEditor.getValue());
             } else {
                 aceEditor.session.setValue(markdown);
                 aceEditor.clearSelection();
@@ -516,12 +662,12 @@
         },
 
         htmlContent: function() {
-            var html = converter.makeHtml(aceEditor.session.getValue());
+            var html = converter.makeHtml(convertToLink(aceEditor.session.getValue()));
             return html;
         },
-        preview: function(markdown,options) {
-            if(markdown){
-                options = $.extend(true, {},$.fn.codeparlMarkdown.defaults, options);
+        preview: function(markdown, options) {
+            if (markdown) {
+                options = $.extend(true, {}, $.fn.codeparlMarkdown.defaults, options);
                 //add the preview panel 
                 $container = this.parent();
                 $preview = $('<div>').addClass('cpme-preview markdown-body overflow-auto p-2 bg-white border')
@@ -563,16 +709,24 @@
 
     //bind our default options to jquery 
     $.fn.codeparlMarkdown.defaults = {
-
         fullscreen: true,
         content: {
             allowScript: false,
+        },
+        help: {
+            show: true,
+            link: {
+                url: "https://www.markdownguide.org/basic-syntax/",
+                text: "Advanced help"
+            }
         },
         editor: {
             softTabs: true,
             theme: 'tomorrow',
             editorHeight: '500px',
             editorWidth: '100%',
+            fontSize: 16,
+            showGutter: false
         },
         toolbar: {
             bg: '#F7F7F4',
@@ -587,6 +741,7 @@
                 {
                     btnList: 'fa-list-ul',
                     btnOrderedList: 'fa-list-ol',
+                    btnRule: 'line',
                 },
                 {
                     btnBlock: 'fa-quote-left',
@@ -598,11 +753,16 @@
                     btnImage: 'fa-image',
                 },
                 {
+                    btnHelp: 'fa-question-circle',
+
+                },
+                {
                     btnEdit: 'fa-edit',
                     btnbrowse: 'fa-folder-open',
                     btnPreview: 'fa-eye',
                     btnFullscreen: 'fa-expand',
-                }
+                },
+
             ],
         },
         onFileBrowse: function($input, aceEditor) {
@@ -619,7 +779,7 @@
                 fileReader.readAsText($input[0].files[0]);
             }
         },
-        onPreview: function(html) {
+        onPreview: function(html, markdown) {
 
             //do something with this html    
         }

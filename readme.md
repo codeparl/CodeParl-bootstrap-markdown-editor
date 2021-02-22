@@ -15,14 +15,18 @@ This is a jQuery plugin written by H. Mugabo @codeparl.com.
 
 * Preview support
 * Shortcuts
+* Automatic URL detection
 * Multiple instances on the same page
 * Fullscreen
 * Themes
+* help bar
 * i18n
 
-## Screenshot
+## Screenshots
 
-![Screenshot 1](screenshot.png)
+![Editor Screenshot](edit-screenshot.png)
+
+![Preview Screenshot](preview-screenshot.png)
 
 ## Setup Example
 
@@ -98,9 +102,75 @@ The following options can be passed as an object at the initialization of the pl
 
 ```javascript
 $('.mardown-editor').codeparlMarkdown({
-  // Options
+ fullscreen: true,
+content: {
+    allowScript: false,
+},
+help: {
+    show: true,
+    link: {
+        url: "#",
+        text: "Advanced help"
+    }
+},
+editor: {
+    softTabs: true,
+    theme: 'tomorrow',
+    editorHeight: '500px',
+    editorWidth: '100%',
+    fontSize: 16,
+    showGutter: false
+},
+toolbar: {
+    bg: '#F7F7F4',
+    buttonGroups: [{
+            btnHeader1: 'H1',
+            btnHeader2: 'H2',
+        },
+        {
+            btnBold: 'fa-bold',
+            btnItalic: 'fa-italic',
+        },
+        {
+            btnList: 'fa-list-ul',
+            btnOrderedList: 'fa-list-ol',
+            btnRule: 'line',
+        },
+        {
+            btnBlock: 'fa-quote-left',
+            btnCode: '{ }',
+
+        },
+        {
+            btnLink: 'fa-link',
+            btnImage: 'fa-image',
+        },
+        {
+            btnHelp: 'fa-question-circle',
+
+        },
+        {
+            btnEdit: 'fa-edit',
+            btnbrowse: 'fa-folder-open',
+            btnPreview: 'fa-eye',
+            btnFullscreen: 'fa-expand',
+        },
+
+    ],
+},
+onFileBrowse: function($input, aceEditor) {
+    // you can access the file object 
+    //of this input here. you may also validate the file type 
+    // with your backend script
+    
+},
+onPreview: function(html, markdown) {
+
+    //do something with this html    
+}
 });
 ```
+
 
 Also, you can override the plugin default options. Example:
 

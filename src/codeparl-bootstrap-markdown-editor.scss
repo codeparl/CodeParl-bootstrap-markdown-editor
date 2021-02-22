@@ -1,16 +1,33 @@
 /*load github markdown file for applying a beautiful looking 
-//theme of our markdown body
+theme of our markdown body
 */
 
 @import "github-markdown";
+.cpmd-line {
+    position: absolute;
+    content: '';
+    width: 20px;
+    display: block;
+    height: 1px;
+    background: #6d6a6a;
+    left: 8px;
+}
+
 .cpmd-container.fullscreen {
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
+    transition: all .3s ease-in-out;
     .cpme-editor {
         height: 95vh !important;
+    }
+    .cpme-preview {
+        height: 100% !important;
+    }
+    .cpme-help-bar-info {
+        height: calc(95vh + 1px) !important;
     }
 }
 
@@ -19,6 +36,7 @@ body.cpme-fullscreen {
 }
 
 .cpmd-container {
+    padding: 0 !important;
     .cpme-toolbar {
         .cpme-btn {
             background-color: rgba(192, 192, 192, 0.274) !important;
@@ -26,6 +44,29 @@ body.cpme-fullscreen {
             border: 1px solid transparent !important;
             &:hover {
                 border-color: rgb(68, 43, 43) !important;
+            }
+        }
+        .cpme-rule-btn {
+            position: relative !important;
+            overflow: hidden;
+            * {
+                margin: 0;
+            }
+            &::before {
+                @extend .cpmd-line;
+                top: 10px;
+            }
+            .cpme-rule {
+                width: 20px;
+                height: 2px;
+                background-color: #000;
+                display: inline-block;
+                position: relative;
+                top: -4px;
+            }
+            &::after {
+                @extend .cpmd-line;
+                bottom: 8px;
             }
         }
         .cpme-btn-group.float-right {
@@ -43,6 +84,59 @@ body.cpme-fullscreen {
         button:active {
             outline: none !important;
         }
+        .cpme-md-help {
+            background-color: rgba(204, 204, 204, 0.513) !important;
+            position: relative;
+            bottom: 0px !important;
+            right: -2px !important;
+            z-index: 6;
+            padding-top: 8px !important;
+            .cpme-btn {
+                box-shadow: none !important;
+                color: #007bff;
+                background-color: transparent !important;
+                &:hover {
+                    border-color: transparent !important;
+                }
+            }
+        }
+        &::after {
+            clear: both;
+            content: '';
+            display: block;
+        }
+    }
+    .cpme-help-bar {
+        position: relative;
+        height: 35px;
+        background-color: rgba(204, 204, 204, 0.513);
+        border: 1px solid #BBB;
+        border-left: 0 none;
+        border-right: 0 none;
+        .cpme-help-bar-info {
+            position: absolute !important;
+            z-index: 10;
+            left: 0;
+            background-color: #E5E5E3;
+            overflow: auto;
+            p {
+                width: 95% !important;
+                span {
+                    background-color: #F9F2D0 !important;
+                    display: block;
+                    padding: 5px;
+                    margin: 5px auto 5px auto;
+                }
+            }
+        }
+        &::after {
+            clear: both;
+            content: '';
+            display: block;
+        }
+    }
+    .cpmd-yellow {
+        background-color: #F9F2D0 !important;
     }
 }
 

@@ -5,13 +5,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <meta name="Description" content="Enter your description here" />
+    <meta name="Description" content="CodeParl bootstrap markdown editor" />
     <link rel="stylesheet" href="vendor/css/fontawesome/css/all.css">
     <link rel="stylesheet" href="vendor/css/bootstrap.min.css">
     <link rel="stylesheet" href="../src/codeparl-bootstrap-markdown-editor.min.css">
 
     <title>CodeParl bootstrap markdown editor </title>
 
+    <style>
+        body {
+            background-color: lightslategrey;
+        }
+    </style>
 </head>
 
 <body>
@@ -19,9 +24,10 @@
 
 
 
-    <div class="container p-2 ">
+    <div class="container p-2   ">
 
-        <div class=" ">
+
+        <div class="p-0">
             <div class="editor"></div>
         </div>
 
@@ -37,7 +43,10 @@
 
     <script>
         $('.editor').codeparlMarkdown({
-            fullscreen: true
+            fullscreen: true,
+            help: {
+                show: true
+            }
         })
     </script>
 </body>
