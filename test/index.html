@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="vendor/css/bootstrap.min.css">
     <link rel="stylesheet" href="../src/codeparl-bootstrap-markdown-editor.min.css">
 
+
     <title>CodeParl bootstrap markdown editor </title>
 
     <style>
@@ -21,15 +22,11 @@
 
 <body>
 
-
-
-
     <div class="container p-2   ">
-
-
         <div class="p-0">
             <div class="editor"></div>
         </div>
+
 
     </div>
 
@@ -46,6 +43,11 @@
             fullscreen: true,
             help: {
                 show: true
+            },
+            content: {
+                image: {
+                    backendScript: "../php/image-upload.php"
+                }
             }
         })
     </script>

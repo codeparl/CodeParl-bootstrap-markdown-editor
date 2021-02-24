@@ -5,87 +5,92 @@
 
 
     //define the mehods 
-    var namespace = 'codeparlMarkdown';
-    var aceEditor = null,
+    var namespace = 'codeparlMarkdown',
+        aceEditor = null,
         classPrefix = 'cpme-',
         urlRegex = /((https?:\/\/|ftp:\/\/|www\.|[^\s:=]+@www\.).*?[a-z_\/0-9\-\#=&])(?=(\.|,|;|\?|\!)?("|'|«|»|\[|\s|\r|\n|$))/ig,
-        snippetManager = null;
-    var $container = null;
-    var $editor, $preview;
-    var options = null;
-    var converter = new showdown.Converter();
+        snippetManager = null,
+        formData = new FormData(),
+        $container = null,
+        $editor, $preview,
+        options = null,
+        converter = new showdown.Converter(),
 
-    var buttonActions = {
-        btnHeader1: {
-            tooltip: 'Heading 1 <h1>',
-            action: 'h1'
-        },
-        btnHeader2: {
-            tooltip: 'Heading 2 <h2>',
-            action: 'h2'
-        },
+        buttonActions = {
+            btnHeader1: {
+                tooltip: 'Heading 1 <h1>',
+                action: 'h1'
+            },
+            btnHeader2: {
+                tooltip: 'Heading 2 <h2>',
+                action: 'h2'
+            },
 
-        btnBold: {
-            tooltip: 'Strong <strong> ',
-            action: 'bold'
-        },
-        btnItalic: {
-            tooltip: 'Empasise <em>',
-            action: 'italic'
-        },
-        btnbrowse: {
-            tooltip: 'Open a markdown file',
-            action: 'browse'
-        },
+            btnBold: {
+                tooltip: 'Strong <strong> ',
+                action: 'bold'
+            },
+            btnItalic: {
+                tooltip: 'Empasise <em>',
+                action: 'italic'
+            },
+            btnbrowse: {
+                tooltip: 'Open a markdown file',
+                action: 'browse'
+            },
 
-        btnCode: {
-            tooltip: 'Code Sample <pre><code>',
-            action: 'code'
-        },
-        btnBlock: {
-            tooltip: 'Blockquote <blockquote>',
-            action: 'block'
-        },
+            btnCode: {
+                tooltip: 'Code Sample <pre><code>',
+                action: 'code'
+            },
+            btnBlock: {
+                tooltip: 'Blockquote <blockquote>',
+                action: 'block'
+            },
 
 
-        btnList: {
-            tooltip: 'Bulleted list <ul>',
-            action: 'ul'
-        },
-        btnOrderedList: {
-            tooltip: 'Numbered list <ol>',
-            action: 'ol'
-        },
-        btnRule: {
-            tooltip: 'Horizontal rule <hr>',
-            action: 'rule'
-        },
-        btnLink: {
-            tooltip: 'Hyperlink <a>',
-            action: 'link'
-        },
-        btnImage: {
-            tooltip: 'Insert image <img>',
-            action: 'image'
-        },
-        btnEdit: {
-            tooltip: 'Edit',
-            action: 'edit'
-        },
-        btnPreview: {
-            tooltip: 'Preview',
-            action: 'preview'
-        },
-        btnFullscreen: {
-            tooltip: 'Fullscreen',
-            action: 'fullscreen'
-        },
-        btnHelp: {
-            tooltip: 'Show markdown help',
-            action: 'help'
-        },
+            btnList: {
+                tooltip: 'Bulleted list <ul>',
+                action: 'ul'
+            },
+            btnOrderedList: {
+                tooltip: 'Numbered list <ol>',
+                action: 'ol'
+            },
+            btnRule: {
+                tooltip: 'Horizontal rule <hr>',
+                action: 'rule'
+            },
+            btnLink: {
+                tooltip: 'Hyperlink <a>',
+                action: 'link'
+            },
+            btnImage: {
+                tooltip: 'Insert image <img>',
+                action: 'image'
+            },
+            btnFont: {
+                tooltip: '',
+                action: 'font'
+            },
+            btnEdit: {
+                tooltip: 'Edit',
+                action: 'edit'
+            },
+            btnPreview: {
+                tooltip: 'Preview',
+                action: 'preview'
+            },
+            btnFullscreen: {
+                tooltip: 'Fullscreen',
+                action: 'fullscreen'
+            },
+            btnHelp: {
+                tooltip: 'Toggle markdown help',
+                action: 'help'
+            },
 
-    }; //end buttonActions
+        }; //end buttonActions
 
     var helpList = {
         links: {
@@ -167,27 +172,25 @@
 
 
 
-    function getEntredUrl($modal, isLink) {
+    function getEntredUrl() {
         var text = '',
+            $modal = $('.cpme-modal.link-modal'),
             url = '';
-        var $inputs = $modal.find('input');
-        var selectedText = aceEditor.session.getTextRange(aceEditor.getSelectionRange());
+        var $inputs = $modal.find('input[type=text] , input[type=url]');
+        var selectedText = aceEditor.session.getTextRange(aceEditor.getSelectionRange()) || '';
+        $inputs.eq(0).val(selectedText);
 
-        if (selectedText.trim().length > 0)
-            $inputs.eq(0).val(selectedText);
-
-        $modal.find('.modal-footer button.btn-success').on('click.' + namespace, function() {
+        $modal.find('.cpme-select-url').on('click.' + namespace, function() {
             text = $inputs.eq(0).val();
             url = $inputs.eq(1).val();
             if (url.length > 0 && text.length > 0) {
-                $modal.modal('hide');
-                if (isLink)
-                    snippetManager.insertSnippet(aceEditor, '[' + text + '](' + url + ')');
-                else
-                    snippetManager.insertSnippet(aceEditor, '![' + text + '](' + url + ')');
-            } else {
-                shake($modal);
+                if (url.search(/https?/) == -1)
+                    url = 'http://' + url;
+                snippetManager.insertSnippet(aceEditor, '[' + text + '](' + url + ')');
+                $('button[data-action="link"]').trigger('click.' + namespace);
             }
+        }).next('button').on('click.' + namespace, function() {
+            $('button[data-action="link"]').trigger('click.' + namespace);
         });
 
 
@@ -246,56 +249,186 @@
         aceEditor.focus();
     }
 
-    function urlModal(options) {
 
-        if ($.type($().modal) !== 'function')
-            $.error('bootstrap.min.js is required for this plugin');
+    function addImage(url, name) {
+        snippetManager.insertSnippet(aceEditor, '![' + name + '](' + url + ')');
+        $('button[data-action="image"]').trigger('click.' + namespace);
 
-        var $modal = '<div class="modal fade " data-backdrop="false" id="' + namespace + '-modal"  tabindex="-1" role="dialog">';
-        $modal += '<div class="modal-dialog   " role="document">';
-        $modal += '<div class="modal-content">';
-        $modal += '<div class="modal-header ">';
-        $modal += '<h4 class="modal-title text-capitalize "> ' + options.title + '</h4>';
-        $modal += ' <button type="button" class="close" data-dismiss="modal" aria-label="Close">';
-        $modal += '<span aria-hidden="true">&times;</span></button></div>';
-        $modal += '<div class="modal-body"></div>';
-        $modal += '<div class="modal-footer mx-auto text-center w-100"><button class="btn btn-sm btn-success">OK</button>';
-        $modal += '<button data-dismiss="modal" class="btn btn-sm btn-danger">cancel</button></div> ';
-        $modal += '</div></div> </div>';
-        $modal = $($modal).on('hidden.bs.modal', function() {
-            $(this).remove();
+    }
+
+    function browseImage() {
+        $('.cpme-browse-img :input').on('change.' + namespace, function() {
+            var thisInput = $(this);
+            if (thisInput[0].files && thisInput[0].files[0])
+                readImage(thisInput[0].files[0]);
         });
-        $modal.find('.modal-body').html(options.body);
-
-        notifyByShake($modal);
-        return $modal;
 
 
     }
 
-    function notifyByShake($modal) {
-        $modal.on('click.' + namespace, function(e) {
-            if (!$(e.target).is('.modal-dialog *')) {
-                shake($modal);
-            }
+
+
+    function selectImage(callback) {
+        $('button.cpme-select-img').on('click.' + namespace, function() {
+            if (options.content.image.backendScript.trim().length === 0)
+                return;
+
+            $(this).css('width', '86.4333px')
+                .html($('<i>').addClass('fas fa-spinner fa-spin'));
+
+            $.ajax({
+                url: options.content.image.backendScript,
+                type: 'post',
+                processData: false,
+                dataType: "json",
+                cache: false,
+                async: false,
+                contentType: false,
+                data: formData
+            }).done(function(response) {
+                if (response.imageUrl) {
+                    callback(response.imageUrl, response.name);
+
+                } else {
+                    //console.log(response)
+                }
+
+
+            }).fail(function(response) {
+                //console.log(response);
+            });
+
+        });
+
+
+
+    }
+
+    function readImage(file) {
+        var fileReader = new FileReader();
+        fileReader.onload = function(evt) {
+            $('.cpme-drag-drop img').attr('src', evt.target.result);
+
+        };
+        fileReader.readAsDataURL(file);
+        formData.append('image', file);
+        selectImage(addImage);
+        $('button.cpme-select-img').prop('disabled', false);
+    }
+
+    function dragOver() {
+        $('.cpme-drag-drop').on('dragenter.' + namespace + ', dragover.' + namespace, function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+        }).on('drop.' + namespace, function(e) {
+            e.preventDefault();
+            var files = e.originalEvent.dataTransfer.files;
+            if (files && files[0])
+                readImage(files[0]);
         });
     }
 
-    function urlInputs(text, url) {
-        text = (!text ? "Text" : text);
-        url = (!url ? "URL" : url);
-        var inputText = $('<input>').attr({ type: 'text', placeholder: 'Enter ' + text }).prop('required', true)
-            .addClass('form-control form-control-sm');
-        inputText = $('<label>').addClass('w-100').text(text + ":").append(inputText);
 
-        var inputUrl = $('<input>').attr({ type: url, placeholder: 'Enter ' + url }).prop('required', true)
-            .addClass('form-control form-control-sm');
-        inputUrl = $('<label>').addClass('w-100').text(url + ':').append(inputUrl);
+    function addFontList() {
+        var $select = $('<select>')
+            .addClass('custom-select cpme-font-size py-1 ')
+            .on('change.' + namespace, function() {
+                aceEditor.
+                setOption('fontSize', options.editor.fontSizes[$(this).val()]);
+            });
 
-        return $('<div>').append(inputText)
-            .append(inputUrl);
+        for (const key in options.editor.fontSizes) {
+            var $option = $('<option>').text(key).appendTo($select);
+            if (key === options.editor.defaultFont)
+                $option.attr('selected', 'selected');
+        }
+        return $select;
 
     }
+
+
+    function modal() {
+        var $hbar = $('.cpme-help-bar');
+        var $panel = $('<div>')
+            .addClass(classPrefix + 'modal   w-100 position-absolute ');
+        $panel.insertBefore($hbar).css({
+            top: $hbar.height()
+        });
+        var $content = $('<div>')
+            .addClass(classPrefix + 'modal-content d-flex flex-column mx-auto my-3   ');
+        $content.appendTo($panel);
+        return { pane: $panel, content: $content };
+    }
+
+
+    function addLink() {
+        var $panel = modal().pane.addClass('link-modal'),
+            $content = modal().content;
+
+        $content.addClass('w-50 mx-auto');
+        $("<label>").text('Text')
+            .append($('<input>')
+                .attr({ type: 'text', placeholder: 'Enter url text here...' })
+                .addClass('form-control'))
+            .appendTo($content);
+
+        $("<label>").text('URL')
+            .append($('<input>')
+                .attr({ type: 'url', placeholder: 'e.g. http://example.com' })
+                .addClass('form-control'))
+            .appendTo($content);
+
+        $("<div>").addClass('text-center my-3')
+            .append($("<button>").prop('disabled', false)
+                .addClass('btn cpme-select-url btn-lg mr-2 btn-success  ')
+                .text('Add'))
+            .append($("<button>").addClass('btn btn-lg btn-danger ')
+                .text('Cancel'))
+            .appendTo($content);
+
+        getEntredUrl();
+        return $panel;
+    }
+
+    function imagePanel() {
+        var $panel = modal().pane.addClass('image-modal'),
+            $content = modal().content;
+
+        var imageTypes = options.content.image.types;
+        var h = options.editor.editorHeight - (70 + 60);
+        var css = { height: h + 'px', "background-image": "url(" + options.content.image.placeholder + ")" };
+        $('<div>').addClass('d-flex border p-2 bg-light shadow')
+            .html($('<label>').text('Browse an image...')
+                .append(
+                    $('<input>').attr({ type: 'file', accept: imageTypes }).hide())
+                .addClass('cpme-zoom-hover bg-success cpme-browse-img  d-block text-white '))
+            .appendTo($content);
+
+
+        $('<div>').addClass('cpme-drag-drop position-relative shadow-lg w-100 border mt-3 mb-2 mx-auto')
+            .css(css).append($('<img>')
+                .attr({ alt: '', src: '' })
+                .addClass(' mx-auto d-block p-0 img-fluid '))
+            .appendTo($content).append(
+                $('<p>').addClass('position-absolute h2')
+                .text('Drag and drop an image here')
+            );
+
+        $("<div>").addClass('text-center my-3')
+            .append($("<button>").prop('disabled', true)
+                .addClass('btn cpme-select-img btn-lg mr-2 btn-success  ')
+                .text('Select'))
+            .append($("<button>").addClass('btn btn-lg btn-danger ')
+                .text('Cancel'))
+            .appendTo($content);
+
+        $('button.cpme-select-img').next('button').on('click.' + namespace, function() {
+            $('button[data-action="image"]').trigger('click.' + namespace);
+        });
+        dragOver();
+        return $panel;
+    }
+
 
     function addGroup($toolbar) {
         return $('<div>')
@@ -342,14 +475,6 @@
 
     }
 
-    function shake($model) {
-        $model.find('.modal-content').addClass(' animated fast headShake');
-        setTimeout(function() {
-            $model.find('.modal-content').removeClass('animated fast headShake')
-        }, 1000);
-    }
-
-
     function triggerEditorActions() {
         $container.find('.cpme-toolbar .cpme-btn').each(function() {
             $(this).on('click.' + namespace, function(e) {
@@ -376,19 +501,14 @@
                         $input.trigger('click.' + namespace);
                         break;
                     case 'fullscreen':
-
                         $('body').toggleClass('cpme-fullscreen');
                         $container.toggleClass('fullscreen');
                         $thisBtn.find('i').toggleClass('fa-expand fa-compress');
-                      
-
 
                         if ($thisBtn.find('i').hasClass('fa-expand'))
                             $thisBtn.attr('data-original-title', 'Fullscreen');
                         else
                             $thisBtn.attr('data-original-title', 'Restore');
-
-
                         break;
                     case 'h1':
                         insertText('# ', 'type your heading here');
@@ -418,12 +538,22 @@
                         aceEditor.execCommand('italic');
                         break;
                     case 'link':
-                        aceEditor.execCommand('link');
+                        addLink().slideDown('fast');
+                        $thisBtn.toggleClass('bg-white').parent('div').toggleClass('bg-white');
+                        if (!$thisBtn.hasClass('bg-white'))
+                            $('.cpme-modal').hide(function() {
+                                $(this).remove();
+                            });
+
                         break;
                     case 'image':
-                        var $modal = urlModal({ title: 'Enter Image URL', body: urlInputs('Alt Text') })
-                            .modal('show');
-                        getEntredUrl($modal, false);
+                        imagePanel().slideDown('fast');
+                        $thisBtn.toggleClass('bg-white').parent('div').toggleClass('bg-white');
+                        if (!$thisBtn.hasClass('bg-white'))
+                            $('.cpme-modal').hide(function() {
+                                $(this).remove();
+                            });
+                        browseImage();
                         break;
 
                     default:
@@ -470,7 +600,7 @@
 
                     if (k === 'btnHelp') {
                         if (options.help.show)
-                            $btnGroup.addClass(classPrefix + 'md-help float-right  ');
+                            $btnGroup.addClass(classPrefix + 'md-help   ');
                         else $btnGroup.remove();
 
                     }
@@ -480,8 +610,12 @@
                         $button.addClass('cpme-rule-btn')
                     }
 
+                    if (k === 'btnFont') {
+                        $btnGroup.html(addFontList());
+                    }
+
+
                     if (k === 'btnEdit') {
-                        $btnGroup.addClass('float-right');
                         $button.addClass('active');
                     }
 
@@ -509,6 +643,29 @@
             } //end for
         } //end for
 
+        $toolbar.find('.cpme-btn-group:lt(5)')
+            .wrapAll('<div class="cpme-wrapper-1  animated d-inline-block ">');
+
+        $('<button>').addClass('btn cpme-more py-0 my-0').append($('<i>').addClass('fa fa-bars '))
+            .insertAfter($($toolbar.find('.cpme-wrapper-1')));
+
+        $toolbar.find('.cpme-btn-group:gt(6)')
+            .wrapAll('<div class="cpme-wrapper-2  float-right ">');
+
+        $toolbar.find('.cpme-more').on('click.' + namespace, function() {
+            if ($(this).hasClass('bg-on'))
+                $('.cpme-wrapper-1')
+                .removeClass('slideInRight')
+                .addClass('slideOutRight');
+            else
+                $('.cpme-wrapper-1')
+                .removeClass('slideOutRight')
+                .addClass('slideInRight');
+
+            $(this).toggleClass('bg-on');
+
+        });
+
         return $toolbar;
     }
 
@@ -528,7 +685,7 @@
                     var $info = $('.' + classPrefix + 'help-bar-info');
                     $info.css({
                         top: $hbar.height(),
-                        height: options.editor.editorHeight
+                        height: options.editor.editorHeight + 'px'
                     });
                     $info.html($('<p>').addClass('p-4 mx-auto ')
                         .html(helpList[$(this).data('key')].help));
@@ -584,9 +741,10 @@
         aceEditor.getSession().setUseWrapMode(true);
         aceEditor.getSession().setUseSoftTabs(options.editor.softTabs);
         aceEditor.setOptions({
-            fontSize: options.editor.fontSize,
             showGutter: options.editor.showGutter
         });
+
+        aceEditor.setOption('fontSize', options.editor.fontSizes[options.editor.defaultFont]);
 
         ace.config.loadModule('ace/ext/language_tools', function() {
             snippetManager = ace.require('ace/snippets').snippetManager;
@@ -616,12 +774,12 @@
             this.data(namespace, options);
 
             this.css({
-                height: options.editor.editorHeight
+                height: options.editor.editorHeight + 'px'
             }).addClass('cpme-editor');
             //now we can define the logic of the plugin
 
             $container = this.parent();
-            $container.addClass('w-100 border cpmd-container ').css({
+            $container.addClass('w-100 border cpmd-container position-relative ').css({
                 backgroundColor: "#F7F7F4"
             });
 
@@ -640,7 +798,7 @@
             //add the preview panel 
             $preview = $('<div>').addClass('cpme-preview w-100 markdown-body overflow-auto p-2 bg-white border').hide()
                 .appendTo($container).css({
-                    height: options.editor.editorHeight
+                    height: options.editor.editorHeight + 'px'
                 });
 
             //initialize the ace editor for our markdown 
@@ -672,7 +830,7 @@
                 $container = this.parent();
                 $preview = $('<div>').addClass('cpme-preview markdown-body overflow-auto p-2 bg-white border')
                     .appendTo($container).css({
-                        height: options.editorHeight,
+                        height: options.editorHeight + 'px',
                         width: options.editorWidth
                     });
                 if (markdown.trim().length > 0) {
@@ -710,8 +868,15 @@
     //bind our default options to jquery 
     $.fn.codeparlMarkdown.defaults = {
         fullscreen: true,
+
         content: {
             allowScript: false,
+            image: {
+                types: '.jpeg,.jpg,.png,.gif',
+                placeholder: "../src/photo-placeholder.jpg",
+                backendScript: ""
+
+            }
         },
         help: {
             show: true,
@@ -723,9 +888,14 @@
         editor: {
             softTabs: true,
             theme: 'tomorrow',
-            editorHeight: '500px',
-            editorWidth: '100%',
-            fontSize: 16,
+            editorHeight: 500,
+            fontSizes: {
+                Small: 12,
+                Normal: 16,
+                Large: 18,
+                Xlarge: 26
+            },
+            defaultFont: 'Normal',
             showGutter: false
         },
         toolbar: {
@@ -749,19 +919,27 @@
 
                 },
                 {
-                    btnLink: 'fa-link',
-                    btnImage: 'fa-image',
-                },
-                {
-                    btnHelp: 'fa-question-circle',
+                    btnLink: 'fa-link'
 
                 },
+                {
+                    btnImage: 'fa-image'
+                },
+                {
+                    btnFont: 'font-size'
+                },
+
+
                 {
                     btnEdit: 'fa-edit',
                     btnbrowse: 'fa-folder-open',
                     btnPreview: 'fa-eye',
                     btnFullscreen: 'fa-expand',
                 },
+                {
+                    btnHelp: 'fa-question-circle',
+
+                }
 
             ],
         },
