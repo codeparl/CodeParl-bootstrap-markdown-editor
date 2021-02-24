@@ -14,6 +14,7 @@ This is a jQuery plugin written by H. Mugabo @codeparl.com.
 ## Features
 
 * Preview support
+* Image uload support
 * Shortcuts
 * Automatic URL detection
 * Multiple instances on the same page
