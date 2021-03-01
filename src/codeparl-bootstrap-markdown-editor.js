@@ -1,20 +1,34 @@
-(function($) {
+(function($, window) {
 
     "use strict";
 
-
+    window.Prism = window.Prism || {};
+    Prism.manual = true;
 
     //define the mehods 
     var namespace = 'codeparlMarkdown',
         aceEditor = null,
         classPrefix = 'cpme-',
-        urlRegex = /((https?:\/\/|ftp:\/\/|www\.|[^\s:=]+@www\.).*?[a-z_\/0-9\-\#=&])(?=(\.|,|;|\?|\!)?("|'|«|»|\[|\s|\r|\n|$))/ig,
         snippetManager = null,
         formData = new FormData(),
         $container = null,
         $editor, $preview,
         options = null,
-        converter = new showdown.Converter(),
+        converter = new showdown.Converter({
+            ghCompatibleHeaderId: true,
+            prefixHeaderId: 'cpmep-',
+            parseImgDimensions: true,
+            simplifiedAutoLink: true,
+            strikethrough: true,
+            tables: true,
+            tablesHeaderId: true,
+            tasklists: true,
+            ghMentions: true,
+            ghMentionsLink: "https://github.com/{u}",
+            openLinksInNewWindow: true,
+            emoji: true,
+            metadata: true
+        }),
 
         buttonActions = {
             btnHeader1: {
@@ -91,7 +105,7 @@
             },
 
         }; //end buttonActions
-
+    converter.setFlavor('github');
     var helpList = {
         links: {
             label: "Links",
@@ -447,11 +461,10 @@
             $editor.hide();
             $preview.show();
             var markdown = aceEditor.session.getValue();
-
-            markdown = convertToLink(markdown);
             var html = converter.makeHtml(markdown);
             options.onPreview(disableJs(html), markdown);
             $preview.html(disableJs(html));
+            Prism.highlightAllUnder($preview[0]);
             $('.cpme-btn-normal')
                 .prop('disabled', true)
                 .addClass('disabled');
@@ -717,22 +730,7 @@
         return $hbar;
     }
 
-    function convertToLink(text) {
-        var urls = text.match(urlRegex);
-        if (!urls || urls === null) return text;
 
-        if (urls.length > 0) {
-            for (let index = 0; index < urls.length; index++) {
-                var thisUrl = urls[index];
-                if (thisUrl.search(/https?/) == -1)
-                    thisUrl = 'http://' + thisUrl;
-
-                var url = '[' + thisUrl + '](' + thisUrl + ')';
-                text = text.replace(urls[index], url);
-            }
-        }
-        return text;
-    }
 
     function buildAceEditor() {
         aceEditor = ace.edit($editor.get(0));
@@ -836,6 +834,7 @@
                 if (markdown.trim().length > 0) {
                     var html = converter.makeHtml(markdown || '');
                     this.html($preview.html(disableJs(html)));
+                    Prism.highlightAllUnder($preview[0]);
                 }
             }
 
@@ -965,4 +964,4 @@
     };
 
 
-})(jQuery);
+})(jQuery, window);

@@ -1,5 +1,6 @@
 /*load github markdown file for applying a beautiful looking 
-theme of our markdown body
+theme of our markdown body.
+we also load prism.css for syntax highlighting
 */
 
 $sm: 576px;
@@ -7,6 +8,7 @@ $md: 768px;
 $lg: 992px;
 $xl: 1200px;
 @import "github-markdown";
+@import "prism";
 .cpmd-line {
     position: absolute;
     content: '';

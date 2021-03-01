@@ -8,9 +8,7 @@
     <meta name="Description" content="CodeParl bootstrap markdown editor" />
     <link rel="stylesheet" href="vendor/css/fontawesome/css/all.css">
     <link rel="stylesheet" href="vendor/css/bootstrap.min.css">
-    <link rel="stylesheet" href="../src/codeparl-bootstrap-markdown-editor.min.css">
-
-
+    <link rel="stylesheet" href="src/codeparl-bootstrap-markdown-editor.min.css">
     <title>CodeParl bootstrap markdown editor </title>
 
     <style>
@@ -24,19 +22,25 @@
 
     <div class="container p-2   ">
         <div class="p-0">
-            <div class="editor"></div>
+            <div class="editor">
+
+
+            </div>
         </div>
 
 
     </div>
+
+
 
     <script src="vendor/js/jquery.min.js"></script>
     <script src="vendor/js/popper.min.js"></script>
     <script src="vendor/js/bootstrap.min.js"></script>
     <script src="vendor/js/ace-builds/src-noconflict/ace.js"></script>
     <script src="vendor/js/showdown.min.js"></script>
+    <script src="vendor/js/prism.js"></script>
 
-    <script src="../src/codeparl-bootstrap-markdown-editor.js"></script>
+    <script src="src/codeparl-bootstrap-markdown-editor.js"></script>
 
     <script>
         $('.editor').codeparlMarkdown({
@@ -46,7 +50,7 @@
             },
             content: {
                 image: {
-                    backendScript: "../php/image-upload.php"
+                    backendScript: "php/image-upload.php"
                 }
             }
         })
