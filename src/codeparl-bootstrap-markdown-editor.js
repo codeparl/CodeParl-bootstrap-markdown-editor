@@ -808,7 +808,7 @@
 
         markdownContent: function(markdown) {
             if (!markdown) {
-                return convertToLink(aceEditor.getValue());
+                return aceEditor.getValue();
             } else {
                 aceEditor.session.setValue(markdown);
                 aceEditor.clearSelection();
@@ -818,7 +818,7 @@
         },
 
         htmlContent: function() {
-            var html = converter.makeHtml(convertToLink(aceEditor.session.getValue()));
+            var html = converter.makeHtml(aceEditor.session.getValue());
             return html;
         },
         preview: function(markdown, options) {
