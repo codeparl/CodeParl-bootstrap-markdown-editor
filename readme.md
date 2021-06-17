@@ -1,4 +1,4 @@
-# Bootstrap Markdown Editor
+# CodeParl-bootstrap-markdown-editor
 
 
 Markdown editor for Bootstrap with preview 
