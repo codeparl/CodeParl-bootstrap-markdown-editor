@@ -40,10 +40,10 @@
     <script src="vendor/js/showdown.min.js"></script>
     <script src="vendor/js/prism.js"></script>
 
-    <script src="src/codeparl-bootstrap-markdown-editor.js"></script>
+    <script src="src/dist/codeparl-bootstrap-markdown-editor.min.js"></script>
 
     <script>
-        $('.editor').codeparlMarkdown({
+        var data = {
             fullscreen: true,
             help: {
                 show: true
@@ -52,8 +52,19 @@
                 image: {
                     backendScript: "php/image-upload.php"
                 }
+            },
+            onInput: function(text) {
+                console.log(text);
             }
-        })
+        }
+
+        $('.editor').codeparlMarkdown();
+
+        //Allows preview only 
+        // $('.editor').codeparlMarkdown({
+        //     previewOnly: false,
+        //     markdown: " ```html <br> <headd> </head> ``` "
+        // });
     </script>
 </body>
 

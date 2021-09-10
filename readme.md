@@ -10,17 +10,20 @@ This is a jQuery plugin written by H. Mugabo @codeparl.com.
 * jQuery
 * Ace editor (http://ace.c9.io)
 * Showdown (http://showdownjs.com/)
+* Prism (https://prismjs.com/) 
 
 ## Features
 
-* Preview support
-* Image uload support
+* Supports Preview
+* syntax highlighter (supported by [Prism](https://prismjs.com/) ) - optional
+* Image upload support
 * Shortcuts
 * Automatic URL detection
+* Supports Emojis
 * Multiple instances on the same page
-* Fullscreen
-* Themes
-* help bar
+* Fullscreen mode
+* Editor Themes
+* help bar for markdown syntax
 * i18n
 
 ## Screenshots
@@ -62,14 +65,16 @@ then include the js files before the closing tag of the `<body>` element of your
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.3/ace.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js" integrity="sha512-axJX7DJduStuBB8ePC8ryGzacZPr3rdLaIDZitiEgWWk2gsXxEFlm4UW0iNzj2h3wp5mOylgHAzBzM4nRSvTZA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="codeparl-bootstrap-markdown-editor.min.js"></script>
 </body>
 ```
 
-
 ## Example Usage
 
-### Initialize the editor:
+### Initialize the editor
+
+#### This will initialize the editor
 
 ```javascript
 //select your  div element to turn into a markdown editor.
@@ -93,6 +98,14 @@ $('.mardown-editor').codeparlMarkdown({
             
         }
 });
+```
+
+### Initialize the Markdown Preview
+
+#### This will initialize the previewer only
+
+```javascript
+$('.mardown-editor').codeparlMarkdown({previewOnly: true});
 ```
 
 ## Plugin documentation
@@ -181,7 +194,8 @@ $.fn.codeparlMarkdown.defaults.editor.editorHeight = '500px';
 
 ## License
 
-Licensed under MIT (https://github.com/codeparl/CodeParl-bootstrap-markdown-editor/blob/master/LICENSE).
+Licensed under MIT (https://github.com/codeparl CodeParl-bootstrap-markdown-editor/blob/master/LICENSE)
+
 ## Authors
 
 [H. Mugabo - aka codeparl](https://github.com/codeparl)
